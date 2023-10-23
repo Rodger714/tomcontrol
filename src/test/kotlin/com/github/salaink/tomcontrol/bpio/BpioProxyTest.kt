@@ -3,11 +3,10 @@ package com.github.salaink.tomcontrol.bpio
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -15,12 +14,13 @@ import java.util.concurrent.TimeUnit
 
 @OptIn(DelicateCoroutinesApi::class)
 class BpioProxyTest {
+  @OptIn(ExperimentalCoroutinesApi::class)
   @Test
-  fun test() = runTest {
+  fun test() {
     val vertx = Vertx.vertx()
     try {
       lateinit var mockServerSession: BpioServerSession
-      val mockServer = vertx.createHttpServer(HttpServerOptions().setHost("127.0.0.1"))
+      val mockServer = vertx.createHttpServer(HttpServerOptions().setHost("127.0.0.1").setPort(0))
         .webSocketHandler {
           mockServerSession = BpioServerSession(vertx, it)
         }
@@ -30,9 +30,9 @@ class BpioProxyTest {
           .webSocket(mockServer.actualPort(), "localhost", "/")
           .toCompletionStage().toCompletableFuture().get()
       )
-      val proxyServer = vertx.createHttpServer(HttpServerOptions().setHost("127.0.0.1"))
+      val proxyServer = vertx.createHttpServer(HttpServerOptions().setHost("127.0.0.1").setPort(0))
         .webSocketHandler {
-          launch {
+          GlobalScope.launch {
             proxy(proxyClient.devices).collect(BpioServerSession(vertx, it).devices)
           }
         }
@@ -59,6 +59,7 @@ class BpioProxyTest {
       mockServerSession.devices.value = mapOf(1 to mockDevice)
 
       TimeUnit.SECONDS.sleep(1)
+
       Assertions.assertEquals(1, mockClient.devices.value.size)
       val clientDevice = mockClient.devices.value[0]
       val scalars = listOf(Message.ScalarCmd.Value(0, 0.5, "foo"))
@@ -69,7 +70,9 @@ class BpioProxyTest {
         called = true
         handle.sendOk(msg.id)
       }
-      clientDevice.scalar(scalars)
+      runBlocking {
+        clientDevice.scalar(scalars)
+      }
       Assertions.assertTrue(called)
     } finally {
       vertx.close()

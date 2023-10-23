@@ -26,6 +26,7 @@ dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.3")
   implementation("io.vertx:vertx-lang-kotlin-coroutines:4.4.6")
   implementation("org.slf4j:slf4j-api:2.0.9")
+  runtimeOnly("ch.qos.logback:logback-classic:1.4.11")
 
   rust(project(":rust-library"))
   implementation("fr.stardustenterprises", "yanl", "0.7.4")
