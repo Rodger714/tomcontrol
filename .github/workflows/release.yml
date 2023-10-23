@@ -7,6 +7,8 @@ jobs:
   test-linux:
     name: "Build: Linux"
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
@@ -25,6 +27,8 @@ jobs:
   test-macosx:
     name: "Build: Mac OS"
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
@@ -42,6 +46,8 @@ jobs:
   test-win:
     name: "Build: Windows"
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
