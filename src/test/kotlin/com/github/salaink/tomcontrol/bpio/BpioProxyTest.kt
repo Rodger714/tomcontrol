@@ -1,6 +1,7 @@
 package com.github.salaink.tomcontrol.bpio
 
 import io.vertx.core.Vertx
+import io.vertx.core.http.HttpServerOptions
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -19,7 +20,7 @@ class BpioProxyTest {
     val vertx = Vertx.vertx()
     try {
       lateinit var mockServerSession: BpioServerSession
-      val mockServer = vertx.createHttpServer()
+      val mockServer = vertx.createHttpServer(HttpServerOptions().setHost("127.0.0.1"))
         .webSocketHandler {
           mockServerSession = BpioServerSession(vertx, it)
         }
@@ -29,7 +30,7 @@ class BpioProxyTest {
           .webSocket(mockServer.actualPort(), "localhost", "/")
           .toCompletionStage().toCompletableFuture().get()
       )
-      val proxyServer = vertx.createHttpServer()
+      val proxyServer = vertx.createHttpServer(HttpServerOptions().setHost("127.0.0.1"))
         .webSocketHandler {
           launch {
             proxy(proxyClient.devices).collect(BpioServerSession(vertx, it).devices)
