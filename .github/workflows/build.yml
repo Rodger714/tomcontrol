@@ -15,5 +15,5 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - run: sudo apt-get install -y libdbus-1-dev
+      - run: sudo apt-get install -y libdbus-1-dev pkg-config
       - run: ./gradlew check
