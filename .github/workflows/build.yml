@@ -18,9 +18,19 @@ jobs:
           java-version: '17'
       - run: sudo apt-get install -y libdbus-1-dev pkg-config
       - run: ./gradlew check
-  test-macosx:
-    name: "Test: Mac OS"
+  test-macosx-x64:
+    name: "Test: Mac OS x64"
     runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - run: ./gradlew check
+  test-macosx-arm64:
+    name: "Test: Mac OS ARM64"
+    runs-on: macos-13-arm64
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
