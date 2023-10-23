@@ -1,15 +1,15 @@
-mod connector;
-mod error;
-
 use std::error::Error;
 use std::mem;
+
+use btleplug::api::Manager;
 use jni::JNIEnv;
-use btleplug::api::{BDAddr, Manager};
-use btleplug::platform::PeripheralId;
-use jni::errors::Error::NullPtr;
 use jni::sys::{jbyteArray, jclass, jlong, jlongArray, jsize};
 use uuid::Uuid;
-use crate::connector::Connector;
+
+use crate::connector::{Connector, PeripheralIndex};
+
+mod connector;
+mod error;
 
 fn rethrow(_env: &mut JNIEnv, err: Box<dyn Error>) {
     let _ = _env.throw_new("com/github/salaink/tomcontrol/dlab/NativeException", err.to_string());
@@ -17,6 +17,14 @@ fn rethrow(_env: &mut JNIEnv, err: Box<dyn Error>) {
 
 fn to_connector(connector_ptr: jlong) -> &'static Connector {
     return unsafe { mem::transmute::<jlong, *mut Connector>(connector_ptr).as_mut() }.unwrap()
+}
+
+impl From<jlong> for PeripheralIndex {
+    fn from(v: jlong) -> Self {
+        return PeripheralIndex {
+            0: v as u64
+        };
+    }
 }
 
 #[no_mangle]
@@ -59,10 +67,8 @@ pub extern "system" fn Java_com_github_salaink_tomcontrol_dlab_Native_write(
     data: jni::objects::JByteArray
 ) {
     let connector = to_connector(connector_ptr);
-    let mut peri_id = [0u8; 6];
-    peri_id.copy_from_slice(&peripheral_id.to_be_bytes()[2..8]);
     let result = connector.write(
-        PeripheralId::from(BDAddr::from(peri_id)),
+        PeripheralIndex::from(peripheral_id),
         Uuid::from_u64_pair(service_id_hi as u64, service_id_lo as u64),
         Uuid::from_u64_pair(characteristic_id_hi as u64, characteristic_id_lo as u64),
         _env.convert_byte_array(&data).unwrap().as_slice()
@@ -84,10 +90,8 @@ pub extern "system" fn Java_com_github_salaink_tomcontrol_dlab_Native_read(
     characteristic_id_lo: jlong
 ) -> jbyteArray {
     let connector = to_connector(connector_ptr);
-    let mut peri_id = [0u8; 6];
-    peri_id.copy_from_slice(&peripheral_id.to_be_bytes()[2..8]);
     let result = connector.read(
-        PeripheralId::from(BDAddr::from(peri_id)),
+        PeripheralIndex::from(peripheral_id),
         Uuid::from_u64_pair(service_id_hi as u64, service_id_lo as u64),
         Uuid::from_u64_pair(characteristic_id_hi as u64, characteristic_id_lo as u64)
     );
@@ -108,9 +112,7 @@ pub extern "system" fn Java_com_github_salaink_tomcontrol_dlab_Native_listDevice
     let devices = connector.list_devices();
     let mut buf = vec![];
     for p in devices {
-        let mut peri_id = [0u8; 8];
-        peri_id[2..8].copy_from_slice(&p.into_inner());
-        buf.push(i64::from_be_bytes(peri_id));
+        buf.push(p.0 as i64);
     }
     let mut arr = _env.new_long_array(buf.len() as jsize).unwrap();
     _env.set_long_array_region(&arr, 0, buf.as_slice()).unwrap();

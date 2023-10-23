@@ -4,4 +4,6 @@ pub enum Error {
     WrongAdapterCount,
     #[error("No such characteristic")]
     NoSuchCharacteristic,
+    #[error("No such peripheral")]
+    NoSuchPeripheral,
 }
