@@ -38,7 +38,7 @@ class BpioProxyTest {
         .listen().toCompletionStage().toCompletableFuture().get()
       val mockClient = BpioClient(
         vertx, vertx.createHttpClient()
-          .webSocket(mockServer.actualPort(), "localhost", "/")
+          .webSocket(proxyServer.actualPort(), "localhost", "/")
           .toCompletionStage().toCompletableFuture().get()
       )
 
