@@ -4,10 +4,13 @@ plugins {
   kotlin("jvm")
   id("org.jetbrains.compose")
   id("fr.stardustenterprises.rust.importer") version "3.2.5"
+  id("com.palantir.git-version") version "3.0.0"
 }
 
 group = "com.github.salaink"
-version = "1.0-SNAPSHOT"
+
+val gitVersion: groovy.lang.Closure<String> by extra
+version = gitVersion().removePrefix("v")
 
 repositories {
   mavenCentral()
@@ -47,11 +50,5 @@ rustImport {
 compose.desktop {
   application {
     mainClass = "com.github.salaink.tomcontrol.MainKt"
-
-    nativeDistributions {
-      targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-      packageName = "tomcontrol"
-      packageVersion = "1.0.0"
-    }
   }
 }
