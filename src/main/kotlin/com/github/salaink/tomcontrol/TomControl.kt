@@ -37,7 +37,7 @@ class TomControl {
 
   @OptIn(ExperimentalCoroutinesApi::class)
   val allDevices: Flow<List<ControllableDevice>> = combine(
-    bpioClient.flatMapLatest { cl -> cl?.devices ?: emptyFlow() },
+    bpioClient.flatMapLatest { cl -> cl?.devices ?: flowOf(emptyList()) },
     dlabModule.devices
   ) { arr ->
     arr.flatMap { it }
