@@ -1,4 +1,4 @@
-name: Run tests
+name: Release artifacts
 on:
   release:
     types:
@@ -21,6 +21,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
           file: build/compose/jars/tomcontrol-*.jar
           file_glob: true
           overwrite: true
@@ -40,6 +41,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
           file: build/compose/jars/tomcontrol-*.jar
           file_glob: true
           overwrite: true
@@ -59,6 +61,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
           file: build/compose/jars/tomcontrol-*.jar
           file_glob: true
           overwrite: true
