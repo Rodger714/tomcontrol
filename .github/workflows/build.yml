@@ -37,4 +37,4 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-      - run: gradlew.bat check
+      - run: ./gradlew.bat check
